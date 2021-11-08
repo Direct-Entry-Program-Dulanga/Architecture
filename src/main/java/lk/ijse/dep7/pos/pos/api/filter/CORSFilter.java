@@ -1,4 +1,4 @@
-package lk.ijse.dep7.pos.pos.filter;
+package lk.ijse.dep7.pos.pos.api.filter;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
