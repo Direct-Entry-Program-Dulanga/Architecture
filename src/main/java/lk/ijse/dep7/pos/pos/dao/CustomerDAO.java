@@ -1,7 +1,6 @@
 package lk.ijse.dep7.pos.pos.dao;
 
 import lk.ijse.dep7.pos.pos.dto.CustomerDTO;
-import lk.ijse.dep7.pos.pos.exception.FailedOperationException;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -11,8 +10,8 @@ public class CustomerDAO {
 
     private static Connection connection;
 
-    public static void setConnection(Connection connection){
-        CustomerDAO.connection = connection;
+    public CustomerDAO(Connection connection){
+        this.connection = connection;
     }
 
     public static void saveCustomer(CustomerDTO customer){

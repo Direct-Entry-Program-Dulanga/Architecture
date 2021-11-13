@@ -7,7 +7,6 @@ import lk.ijse.dep7.pos.pos.exception.FailedOperationException;
 import lk.ijse.dep7.pos.pos.exception.NotFoundException;
 
 import java.sql.*;
-import java.util.ArrayList;
 import java.util.List;
 
 public class CustomerService {
@@ -16,22 +15,22 @@ public class CustomerService {
     private CustomerDAO customerDAO;
 
     public CustomerService() {
+
     }
 
     public CustomerService(Connection connection){
-        this.connection = connection;
-        CustomerDAO.setConnection(connection);
+        this.customerDAO = new CustomerDAO(connection);
     }
 
     public void saveCustomer(CustomerDTO customer) throws DuplicateIdentifierException, FailedOperationException {
         if (existCustomer(customer.getId())) {
             throw new DuplicateIdentifierException(customer.getId() + " already exists");
         }
-        CustomerDAO.saveCustomer(customer);
+        customerDAO.saveCustomer(customer);
     }
 
     public long getCustomersCount() throws SQLException{
-        return CustomerDAO.getCustomersCount();
+        return customerDAO.getCustomersCount();
     }
 
     boolean existCustomer(String id){
@@ -42,35 +41,35 @@ public class CustomerService {
             if (!existCustomer(customer.getId())) {
                 throw new NotFoundException("There is no such customer associated with the id " + customer.getId());
             }
-            CustomerDAO.updateCustomer(customer);
+        customerDAO.updateCustomer(customer);
     }
 
     public void deleteCustomer(String id) throws NotFoundException, FailedOperationException {
             if (!existCustomer(id)) {
                 throw new NotFoundException("There is no such customer associated with the id " + id);
             }
-            CustomerDAO.deleteCustomer(id);
+        customerDAO.deleteCustomer(id);
     }
 
     public CustomerDTO findCustomer(String id) throws NotFoundException, FailedOperationException {
             if (!existCustomer(id)) {
                 throw new NotFoundException("There is no such customer associated with the id " + id);
             }
-            return CustomerDAO.findCustomer(id);
+            return customerDAO.findCustomer(id);
 
     }
 
     public List<CustomerDTO> findAllCustomers() throws FailedOperationException {
-        return CustomerDAO.findAllCustomer();
+        return customerDAO.findAllCustomer();
     }
 
     public List<CustomerDTO> findAllCustomers(int page, int size) throws FailedOperationException {
-        return CustomerDAO.findAllCustomers(page, size);
+        return customerDAO.findAllCustomers(page, size);
     }
 
     public String generateNewCustomerId() throws FailedOperationException {
 
-        String id = CustomerDAO.getLastCustomerId();
+        String id = customerDAO.getLastCustomerId();
         if (id != null) {
 
             int newCustomerId = Integer.parseInt(id.replace("C", "")) + 1;
