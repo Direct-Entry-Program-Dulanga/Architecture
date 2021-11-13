@@ -20,6 +20,7 @@ public class CustomerService {
 
     public CustomerService(Connection connection){
         this.connection = connection;
+        CustomerDAO.setConnection(connection);
     }
 
     public void saveCustomer(CustomerDTO customer) throws DuplicateIdentifierException, FailedOperationException {

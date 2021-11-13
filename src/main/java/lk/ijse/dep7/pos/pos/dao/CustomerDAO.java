@@ -11,6 +11,10 @@ public class CustomerDAO {
 
     private static Connection connection;
 
+    public static void setConnection(Connection connection){
+        CustomerDAO.connection = connection;
+    }
+
     public static void saveCustomer(CustomerDTO customer){
         try{
             PreparedStatement pstm = connection.prepareStatement("INSERT INTO customer (id, name, address) VALUES (?,?,?)");
