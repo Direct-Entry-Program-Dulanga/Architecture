@@ -1,5 +1,6 @@
 package lk.ijse.dep7.pos.pos.service;
 
+import lk.ijse.dep7.pos.pos.dao.ItemDAO;
 import lk.ijse.dep7.pos.pos.dto.ItemDTO;
 import lk.ijse.dep7.pos.pos.dto.OrderDTO;
 import lk.ijse.dep7.pos.pos.dto.OrderDetailDTO;
@@ -14,7 +15,8 @@ import java.util.List;
 
 public class OrderService {
 
-    private final Connection connection;
+    private Connection connection;
+    private ItemDAO itemDAO;
 
     public OrderService(Connection connection) {
         this.connection = connection;

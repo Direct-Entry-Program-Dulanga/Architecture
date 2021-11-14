@@ -111,7 +111,7 @@ public class ItemServlet extends HttpServlet {
 
         } catch (JsonbException exp) {
             resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
-        } catch (SQLException | RuntimeException | FailedOperationException exp) {
+        } catch (SQLException | RuntimeException exp) {
             throw new RuntimeException(exp);
         } catch (DuplicateIdentifierException e) {
             throw new RuntimeException("Item already exits", e);
@@ -151,7 +151,7 @@ public class ItemServlet extends HttpServlet {
                 resp.setContentType("application/json");
                 resp.getWriter().println(jsonb.toJson("OK"));
 
-            } catch (SQLException | FailedOperationException ex) {
+            } catch (SQLException ex) {
                 throw new RuntimeException(ex);
             } catch (NotFoundException e) {
                 resp.sendError(HttpServletResponse.SC_NOT_FOUND);
@@ -178,7 +178,7 @@ public class ItemServlet extends HttpServlet {
             resp.setContentType("application/json");
             resp.getWriter().println(jsonb.toJson("OK"));
 
-        } catch (SQLException | FailedOperationException exp) {
+        } catch (SQLException exp) {
             throw new RuntimeException(exp);
         } catch (NotFoundException e) {
             resp.sendError(HttpServletResponse.SC_NOT_FOUND);

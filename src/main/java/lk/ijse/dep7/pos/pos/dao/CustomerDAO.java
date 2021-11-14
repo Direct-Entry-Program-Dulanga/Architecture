@@ -15,16 +15,7 @@ public class CustomerDAO {
     }
 
     public static void saveCustomer(CustomerDTO customer){
-        try{
-            PreparedStatement pstm = connection.prepareStatement("INSERT INTO customer (id, name, address) VALUES (?,?,?)");
-            pstm.setString(1, customer.getId());
-            pstm.setString(2, customer.getName());
-            pstm.setString(3, customer.getAddress());
-            pstm.executeUpdate();
-        }catch (SQLException e){
-            e.printStackTrace();
-            throw new RuntimeException("Failed to save the customer");
-        }
+
     }
 
     public static long getCustomersCount(){

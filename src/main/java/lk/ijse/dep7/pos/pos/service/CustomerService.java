@@ -6,7 +6,8 @@ import lk.ijse.dep7.pos.pos.exception.DuplicateIdentifierException;
 import lk.ijse.dep7.pos.pos.exception.FailedOperationException;
 import lk.ijse.dep7.pos.pos.exception.NotFoundException;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.List;
 
 public class CustomerService {
@@ -18,7 +19,7 @@ public class CustomerService {
 
     }
 
-    public CustomerService(Connection connection){
+    public CustomerService(Connection connection) {
         this.customerDAO = new CustomerDAO(connection);
     }
 
@@ -29,33 +30,33 @@ public class CustomerService {
         customerDAO.saveCustomer(customer);
     }
 
-    public long getCustomersCount() throws SQLException{
+    public long getCustomersCount() throws SQLException {
         return customerDAO.getCustomersCount();
     }
 
-    boolean existCustomer(String id){
+    boolean existCustomer(String id) {
         return customerDAO.existCustomer(id);
     }
 
     public void updateCustomer(CustomerDTO customer) throws FailedOperationException, NotFoundException, SQLException {
-            if (!existCustomer(customer.getId())) {
-                throw new NotFoundException("There is no such customer associated with the id " + customer.getId());
-            }
+        if (!existCustomer(customer.getId())) {
+            throw new NotFoundException("There is no such customer associated with the id " + customer.getId());
+        }
         customerDAO.updateCustomer(customer);
     }
 
     public void deleteCustomer(String id) throws NotFoundException, FailedOperationException {
-            if (!existCustomer(id)) {
-                throw new NotFoundException("There is no such customer associated with the id " + id);
-            }
+        if (!existCustomer(id)) {
+            throw new NotFoundException("There is no such customer associated with the id " + id);
+        }
         customerDAO.deleteCustomer(id);
     }
 
     public CustomerDTO findCustomer(String id) throws NotFoundException, FailedOperationException {
-            if (!existCustomer(id)) {
-                throw new NotFoundException("There is no such customer associated with the id " + id);
-            }
-            return customerDAO.findCustomer(id);
+        if (!existCustomer(id)) {
+            throw new NotFoundException("There is no such customer associated with the id " + id);
+        }
+        return customerDAO.findCustomer(id);
 
     }
 
