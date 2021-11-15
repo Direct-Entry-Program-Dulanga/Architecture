@@ -1,12 +1,9 @@
 package lk.ijse.dep7.pos.pos.dao;
 
 import lk.ijse.dep7.pos.pos.dto.OrderDTO;
-import lk.ijse.dep7.pos.pos.dto.OrderDetailDTO;
-import lk.ijse.dep7.pos.pos.entity.Customer;
 import lk.ijse.dep7.pos.pos.entity.Order;
 
 import java.sql.*;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,33 +16,66 @@ public class OrderDAO {
     }
 
 
-    public void saveOrder(Order order){
-
+    public void saveOrder(Order order) throws SQLException {
+        PreparedStatement stm = connection.prepareStatement("INSERT INTO `order` values (?,?,?)");
+        stm.setString(1, order.getId());
+        stm.setDate(2, order.getDate());
+        stm.setString(3, order.getCustomerId());
+        stm.executeUpdate();
     }
 
-    public void updateOrder(Order order){
-
+    public void updateOrder(Order order) throws SQLException {
+        PreparedStatement stm = connection.prepareStatement("UPDATE `order` SET date=?, customer_id=? WHERE id=?");
+        stm.setDate(2, order.getDate());
+        stm.setString(3, order.getCustomerId());
+        stm.setString(1, order.getId());
+        stm.executeUpdate();
     }
 
-    public void deleteOrderById(String orderId){
-
+    public void deleteOrderById(String orderId) throws SQLException {
+        PreparedStatement stm = connection.prepareStatement("DELETE FROM `order` WHERE id=?");
+        stm.setString(1, orderId);
+        stm.executeUpdate();
     }
 
-    public Order findOrderById(String orderId){
-        return null;
+    public Order findOrderById(String orderId) throws SQLException {
+        PreparedStatement pstm = connection.prepareStatement("SELECT * FROM `order` WHERE id=?");
+        pstm.setString(1, orderId);
+        ResultSet rst = pstm.executeQuery();
+        if (rst.next()) {
+            return new Order(orderId, rst.getDate("date"), rst.getString("customer_id"));
+        } else {
+            throw new RuntimeException(orderId + "is not found");
+        }
     }
 
-    public List<Order> findAllOrders(){
-        return null;
+    public List<Order> findAllOrders() throws SQLException {
+        List<Order> ordersList = new ArrayList<>();
+
+        Statement stm = connection.createStatement();
+        ResultSet rst = stm.executeQuery("SELECT * FROM `order`");
+
+        while (rst.next()) {
+            ordersList.add(new Order(rst.getString("id"), rst.getDate("date"), rst.getString("customer_id")));
+        }
+
+        return ordersList;
     }
 
-    public long countOrders(){
-        return 0;
+    public long countOrders() throws SQLException {
+        Statement stm = connection.createStatement();
+        ResultSet rst = stm.executeQuery("SELECT COUNT(*) FROM `order`");
+        rst.next();
+        return rst.getLong(1);
     }
 
-    public boolean existsOrderById(String orderId){
-        return false;
+    public boolean existsOrderById(String orderId) throws SQLException {
+        PreparedStatement stm = connection.prepareStatement("SELECT id FROM `order` WHERE id=?");
+        stm.setString(1, orderId);
+        return stm.executeQuery().next();
     }
+
+
 //    public static void saveOrder(String orderId, LocalDate orderDate, String customerId) {
 //        try {
 //            PreparedStatement stm = connection.prepareStatement("INSERT INTO `order` (id, date, customer_id) VALUES (?,?,?)");
