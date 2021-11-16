@@ -69,6 +69,11 @@ public class OrderDAO {
         return rst.getLong(1);
     }
 
+    public static String getLastOrderId() throws SQLException {
+            ResultSet rst = connection.createStatement().executeQuery("SELECT id FROM `order` ORDER BY id DESC LIMIT 1;");
+            return rst.next()? rst.getString("id"): null;
+    }
+
     public boolean existsOrderById(String orderId) throws SQLException {
         PreparedStatement stm = connection.prepareStatement("SELECT id FROM `order` WHERE id=?");
         stm.setString(1, orderId);
