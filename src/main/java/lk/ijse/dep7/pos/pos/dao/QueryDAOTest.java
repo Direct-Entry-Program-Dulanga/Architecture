@@ -29,6 +29,6 @@ class QueryDAOTest {
 
     @Test
     void searchOrders() throws SQLException {
-        this.queryDAO.searchOrders("").forEach(System.out::println);
+//        this.queryDAO.searchOrders("").forEach(System.out::println);
     }
 }
