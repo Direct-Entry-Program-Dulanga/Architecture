@@ -6,6 +6,7 @@ import lk.ijse.dep7.pos.pos.entity.Order;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class OrderDAO {
 
@@ -38,15 +39,11 @@ public class OrderDAO {
         stm.executeUpdate();
     }
 
-    public Order findOrderById(String orderId) throws SQLException {
+    public Optional<Order> findOrderById(String orderId) throws SQLException {
         PreparedStatement pstm = connection.prepareStatement("SELECT * FROM `order` WHERE id=?");
         pstm.setString(1, orderId);
         ResultSet rst = pstm.executeQuery();
-        if (rst.next()) {
-            return new Order(orderId, rst.getDate("date"), rst.getString("customer_id"));
-        } else {
-            throw new RuntimeException(orderId + "is not found");
-        }
+        return  (rst.next()) ? Optional.of(new Order(orderId, rst.getDate("date"), rst.getString("customer_id"))) : Optional.empty();
     }
 
     public List<Order> findAllOrders() throws SQLException {

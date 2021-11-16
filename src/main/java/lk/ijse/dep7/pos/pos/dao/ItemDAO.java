@@ -5,6 +5,7 @@ import lk.ijse.dep7.pos.pos.entity.Item;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class ItemDAO {
     private static Connection connection;
@@ -37,15 +38,12 @@ public class ItemDAO {
         pstm.executeUpdate();
     }
 
-    public Item findItemByCode(String itemCode) throws SQLException {
+    public Optional<Item> findItemByCode(String itemCode) throws SQLException {
         PreparedStatement pstm = connection.prepareStatement("SELECT * FROM item WHERE code=?");
         pstm.setString(1, itemCode);
         ResultSet rst = pstm.executeQuery();
-        if (rst.next()) {
-            return new Item(itemCode, rst.getString("description"), rst.getBigDecimal("unit_price"), rst.getInt("qty_on_hand"));
-        } else {
-            throw new RuntimeException(itemCode + "is not found");
-        }
+        return  (rst.next()) ? Optional.of(new Item(itemCode, rst.getString("description"), rst.getBigDecimal("unit_price"), rst.getInt("qty_on_hand"))) :
+                Optional.empty();
     }
 
     public List<Item> findAllItems() throws SQLException {

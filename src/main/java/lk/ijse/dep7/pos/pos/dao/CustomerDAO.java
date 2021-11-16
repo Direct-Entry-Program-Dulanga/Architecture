@@ -5,6 +5,7 @@ import lk.ijse.dep7.pos.pos.entity.Customer;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class CustomerDAO {
 
@@ -36,15 +37,12 @@ public class CustomerDAO {
         pstm.executeUpdate();
     }
 
-    public Customer findCustomerById(String customerId) throws SQLException {
+    public Optional<Customer> findCustomerById(String customerId) throws SQLException {
         PreparedStatement pstm = connection.prepareStatement("SELECT * FROM customer WHERE id=?");
         pstm.setString(1, customerId);
         ResultSet rst = pstm.executeQuery();
-        if (rst.next()) {
-            return new Customer(customerId, rst.getString("name"), rst.getString("address"));
-        } else {
-            throw new RuntimeException(customerId + "is not found");
-        }
+        return (rst.next())? Optional.of(new Customer(customerId, rst.getString("name"), rst.getString("address")))
+            : Optional.empty();
     }
 
     public List<Customer> findAllCustomers() throws SQLException {

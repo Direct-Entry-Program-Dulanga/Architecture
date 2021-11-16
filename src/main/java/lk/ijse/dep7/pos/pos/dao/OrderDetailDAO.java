@@ -10,12 +10,13 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class OrderDetailDAO {
 
     private Connection connection;
 
-    public OrderDetailDAO(Connection connection){
+    public OrderDetailDAO(Connection connection) {
         this.connection = connection;
     }
 
@@ -44,20 +45,16 @@ public class OrderDetailDAO {
         stm.executeUpdate();
     }
 
-    public OrderDetail findOrderDetailById(OrderDetailPK orderDetailPK) throws SQLException {
+    public Optional<OrderDetail> findOrderDetailById(OrderDetailPK orderDetailPK) throws SQLException {
         PreparedStatement stm = connection.prepareStatement("SELECT * FROM order_detail where order_id=? AND item_code=?");
         stm.setString(1, orderDetailPK.getOrderId());
         stm.setString(2, orderDetailPK.getItemCode());
         ResultSet rst = stm.executeQuery();
 
-        if(rst.next()){
-            return new OrderDetail(rst.getString("order_id"),
-                    rst.getString("item_code"),
-                    rst.getBigDecimal("unit_price"),
-                    rst.getInt("qty"));
-        }else{
-            throw new RuntimeException(orderDetailPK + "Not Found");
-        }
+        return (rst.next()) ? Optional.of(new OrderDetail(rst.getString("order_id"),
+                rst.getString("item_code"),
+                rst.getBigDecimal("unit_price"),
+                rst.getInt("qty"))) : Optional.empty();
     }
 
 
