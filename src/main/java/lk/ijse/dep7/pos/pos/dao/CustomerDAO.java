@@ -76,6 +76,13 @@ public class CustomerDAO {
         return rst.next()? rst.getString("id"): null;
     }
 
+    public long countCustomers() throws Exception {
+        Statement stm = connection.createStatement();
+        ResultSet rst = stm.executeQuery("SELECT COUNT(*) FROM customer");
+        rst.next();
+        return rst.getLong(1);
+    }
+
     public boolean existsCustomerById(String customerId) throws SQLException {
         PreparedStatement pstm = connection.prepareStatement("SELECT id FROM customer WHERE id=?");
         pstm.setString(1, customerId);
