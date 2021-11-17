@@ -34,7 +34,7 @@ public class CustomerService {
         if (existCustomer(customer.getId())) {
             throw new RuntimeException(customer.getId() + " already exists");
         }
-        customerDAO.saveCustomer(EntityDTOMapper.fromCustomerDTO(customer));
+        customerDAO.saveCustomer(fromCustomerDTO(customer));
     }
 
     public long getCustomersCount() throws Exception {
@@ -49,7 +49,7 @@ public class CustomerService {
         if (!existCustomer(customer.getId())) {
             throw new RuntimeException("There is no such customer associated with the id " + customer.getId());
         }
-        customerDAO.updateCustomer(EntityDTOMapper.fromCustomerDTO(customer));
+        customerDAO.updateCustomer(fromCustomerDTO(customer));
     }
 
     public void deleteCustomer(String id) throws SQLException {
@@ -67,7 +67,7 @@ public class CustomerService {
 //            Customer customer = optCustomer.get();
 //            return new CustomerDTO(customer.getId(), customer.getName(), customer.getAddress());
 //        }
-        return EntityDTOMapper.toCustomerDTO(customerDAO.findCustomerById(id).orElseThrow(() -> {throw new RuntimeException("There is no such customer associated with the id " + id);}));
+        return toCustomerDTO(customerDAO.findCustomerById(id).orElseThrow(() -> {throw new RuntimeException("There is no such customer associated with the id " + id);}));
     }
 
     public List<CustomerDTO> findAllCustomers() throws SQLException {
@@ -77,13 +77,13 @@ public class CustomerService {
 //        return dtoList;
 
 //        return customerDAO.findAllCustomers().stream().map(c -> new CustomerDTO(c.getId(), c.getName(), c.getAddress())).collect(Collectors.toList());
-        return EntityDTOMapper.toCustomerDTOList(customerDAO.findAllCustomers());
+        return toCustomerDTOList(customerDAO.findAllCustomers());
     }
 
     public List<CustomerDTO> findAllCustomers(int page, int size) throws SQLException {
 //        return customerDAO.(page, size);
 //        return customerDAO.findAllCustomers(page, size).stream().map(c -> new CustomerDTO(c.getId(), c.getName(), c.getAddress())).collect(Collectors.toList());
-        return EntityDTOMapper.toCustomerDTOList(customerDAO.findAllCustomers(page, size));
+        return toCustomerDTOList(customerDAO.findAllCustomers(page, size));
     }
 
     public String generateNewCustomerId() throws SQLException {
