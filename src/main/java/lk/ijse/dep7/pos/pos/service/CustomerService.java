@@ -6,6 +6,9 @@ import lk.ijse.dep7.pos.pos.entity.Customer;
 import lk.ijse.dep7.pos.pos.exception.DuplicateIdentifierException;
 import lk.ijse.dep7.pos.pos.exception.FailedOperationException;
 import lk.ijse.dep7.pos.pos.exception.NotFoundException;
+import lk.ijse.dep7.pos.pos.service.util.EntityDTOMapper;
+
+import static lk.ijse.dep7.pos.pos.service.util.EntityDTOMapper.*;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -31,7 +34,7 @@ public class CustomerService {
         if (existCustomer(customer.getId())) {
             throw new RuntimeException(customer.getId() + " already exists");
         }
-        customerDAO.saveCustomer(new Customer(customer.getId(), customer.getName(), customer.getAddress()));
+        customerDAO.saveCustomer(EntityDTOMapper.fromCustomerDTO(customer));
     }
 
     public long getCustomersCount() throws Exception {
@@ -46,7 +49,7 @@ public class CustomerService {
         if (!existCustomer(customer.getId())) {
             throw new RuntimeException("There is no such customer associated with the id " + customer.getId());
         }
-        customerDAO.updateCustomer(new Customer(customer.getId(), customer.getName(), customer.getAddress()));
+        customerDAO.updateCustomer(EntityDTOMapper.fromCustomerDTO(customer));
     }
 
     public void deleteCustomer(String id) throws SQLException {
@@ -64,7 +67,7 @@ public class CustomerService {
 //            Customer customer = optCustomer.get();
 //            return new CustomerDTO(customer.getId(), customer.getName(), customer.getAddress());
 //        }
-        return customerDAO.findCustomerById(id).map(c -> new CustomerDTO(c.getId(), c.getName(), c.getAddress())).orElseThrow(() -> {throw new RuntimeException("There is no such customer associated with the id " + id);});
+        return EntityDTOMapper.toCustomerDTO(customerDAO.findCustomerById(id).orElseThrow(() -> {throw new RuntimeException("There is no such customer associated with the id " + id);}));
     }
 
     public List<CustomerDTO> findAllCustomers() throws SQLException {
@@ -73,12 +76,14 @@ public class CustomerService {
 //        allCustomers.forEach(c -> dtoList.add(new CustomerDTO(c.getId(), c.getName(), c.getAddress())));
 //        return dtoList;
 
-        return customerDAO.findAllCustomers().stream().map(c -> new CustomerDTO(c.getId(), c.getName(), c.getAddress())).collect(Collectors.toList());
+//        return customerDAO.findAllCustomers().stream().map(c -> new CustomerDTO(c.getId(), c.getName(), c.getAddress())).collect(Collectors.toList());
+        return EntityDTOMapper.toCustomerDTOList(customerDAO.findAllCustomers());
     }
 
     public List<CustomerDTO> findAllCustomers(int page, int size) throws SQLException {
 //        return customerDAO.(page, size);
-        return customerDAO.findAllCustomers(page, size).stream().map(c -> new CustomerDTO(c.getId(), c.getName(), c.getAddress())).collect(Collectors.toList());
+//        return customerDAO.findAllCustomers(page, size).stream().map(c -> new CustomerDTO(c.getId(), c.getName(), c.getAddress())).collect(Collectors.toList());
+        return EntityDTOMapper.toCustomerDTOList(customerDAO.findAllCustomers(page, size));
     }
 
     public String generateNewCustomerId() throws SQLException {
