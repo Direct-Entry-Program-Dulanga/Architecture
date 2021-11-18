@@ -91,14 +91,12 @@ public class OrderService {
     }
 
     public OrderDTO searchOrder(String orderId) throws Exception {
-        Order order = orderDAO.findOrderById(orderId).orElseThrow(() -> {
+        Order order = orderDAO.findOrderById(orderId).<RuntimeException>orElseThrow(() -> {
             throw new RuntimeException("Invalid Order ID" + orderId);
         });
         Customer customer = customerDAO.findCustomerById(order.getCustomerId()).get();
         BigDecimal orderTotal = orderDetailDAO.findOrderTotal(orderId).get();
         List<OrderDetail> orderDetails = orderDetailDAO.findOrderDetailsByOrderId(orderId);
-        List<OrderDetailDTO> orderDetailDTOList = orderDetails.stream().map(od -> new OrderDetailDTO(od.getOrderDetailPK().getItemCode(), od.getQty(), od.getUnitPrice())).collect(Collectors.toList());
-
         return toOrderDTO(order, customer, orderTotal,orderDetails);
     }
 

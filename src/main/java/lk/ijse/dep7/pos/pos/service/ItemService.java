@@ -46,7 +46,7 @@ public class ItemService {
     }
 
     public ItemDTO findItem(String code) throws SQLException {
-        return toItemDTO(itemDAO.findItemByCode(code).orElseThrow(() -> {throw new RuntimeException("There is no such customer associated with the id " + code);}));
+        return toItemDTO(itemDAO.findItemByCode(code).<RuntimeException>orElseThrow(() -> {throw new RuntimeException("There is no such customer associated with the id " + code);}));
     }
 
     public List<ItemDTO> findAllItems() throws SQLException {

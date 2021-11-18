@@ -67,7 +67,7 @@ public class CustomerService {
 //            Customer customer = optCustomer.get();
 //            return new CustomerDTO(customer.getId(), customer.getName(), customer.getAddress());
 //        }
-        return toCustomerDTO(customerDAO.findCustomerById(id).orElseThrow(() -> {throw new RuntimeException("There is no such customer associated with the id " + id);}));
+        return toCustomerDTO(customerDAO.findCustomerById(id).<RuntimeException>orElseThrow(() -> {throw new RuntimeException("There is no such customer associated with the id " + id);}));
     }
 
     public List<CustomerDTO> findAllCustomers() throws SQLException {
