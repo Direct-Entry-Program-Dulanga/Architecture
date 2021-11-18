@@ -138,3 +138,7 @@ UNLOCK TABLES;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
 -- Dump completed on 2021-11-08  2:31:14
+
+SELECT id, name FROM customer;
+
+SELECT order_id, SUM(unit_price * qty) as total FROM order_detail GROUP BY order_id;

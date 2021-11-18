@@ -2,9 +2,7 @@ package lk.ijse.dep7.pos.pos.service;
 
 import lk.ijse.dep7.pos.pos.dao.ItemDAO;
 import lk.ijse.dep7.pos.pos.dto.ItemDTO;
-import lk.ijse.dep7.pos.pos.exception.DuplicateIdentifierException;
-import lk.ijse.dep7.pos.pos.exception.FailedOperationException;
-import lk.ijse.dep7.pos.pos.exception.NotFoundException;
+import static lk.ijse.dep7.pos.pos.service.util.EntityDTOMapper.*;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -22,47 +20,44 @@ public class ItemService {
         this.itemDAO = new ItemDAO(connection);
     }
 
-    public void saveItem(ItemDTO item) throws DuplicateIdentifierException, SQLException {
+    public void saveItem(ItemDTO item) throws SQLException {
         if (existItem(item.getCode())) {
-            throw new DuplicateIdentifierException(item.getCode() + " already exists");
+            throw new RuntimeException(item.getCode() + " already exists");
         }
-        ItemDAO.saveItem(item);
+        ItemDAO.saveItem(fromItemDTO(item));
     }
 
-    private boolean existItem(String code) {
+    private boolean existItem(String code) throws SQLException {
         return ItemDAO.existItem(code);
     }
 
-    public void updateItem(ItemDTO item) throws NotFoundException {
+    public void updateItem(ItemDTO item) throws SQLException {
         if (!existItem(item.getCode())) {
-            throw new NotFoundException("There is no such item associated with the code " + item.getCode());
+            throw new RuntimeException("There is no such item associated with the code " + item.getCode());
         }
-        itemDAO.updateItem(item);
+        itemDAO.updateItem(fromItemDTO(item));
     }
 
-    public void deleteItem(String code) throws NotFoundException {
+    public void deleteItem(String code) throws SQLException {
         if (!existItem(code)) {
-            throw new NotFoundException("There is no such item associated with the code " + code);
+            throw new RuntimeException("There is no such item associated with the code " + code);
         }
-        itemDAO.deleteItem(code);
+        itemDAO.deleteItemByCode(code);
     }
 
-    public ItemDTO findItem(String code) throws NotFoundException {
-        if (!existItem(code)) {
-            throw new NotFoundException("There is no such item associated with the id " + code);
-        }
-        return itemDAO.findItem(code);
+    public ItemDTO findItem(String code) throws SQLException {
+        return toItemDTO(itemDAO.findItemByCode(code).orElseThrow(() -> {throw new RuntimeException("There is no such customer associated with the id " + code);}));
     }
 
-    public List<ItemDTO> findAllItems() throws FailedOperationException {
-        return ItemDAO.findAllItems();
+    public List<ItemDTO> findAllItems() throws SQLException {
+        return toItemDTOList(itemDAO.findAllItems());
     }
 
-    public List<ItemDTO> findAllItems(int page, int size) throws FailedOperationException {
-        return ItemDAO.findAllItems(page, size);
+    public List<ItemDTO> findAllItems(int page, int size) throws SQLException {
+        return toItemDTOList(itemDAO.findAllItems(page, size));
     }
 
-    public String generateNewItemCode() throws FailedOperationException {
+    public String generateNewItemCode() throws SQLException {
 
         String code = itemDAO.getLastItemCode();
         if (code != null) {

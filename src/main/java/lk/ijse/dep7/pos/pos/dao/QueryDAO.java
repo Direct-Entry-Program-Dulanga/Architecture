@@ -1,6 +1,5 @@
 package lk.ijse.dep7.pos.pos.dao;
 
-import lk.ijse.dep7.pos.pos.dto.OrderDTO;
 import lk.ijse.dep7.pos.pos.entity.CustomEntity;
 
 import java.sql.Connection;
@@ -61,6 +60,7 @@ public class QueryDAO {
         return orderList;
     }
 
+
     public long countOrders(String query) throws SQLException {
         String[] searchWords = query.split("\\s");
         StringBuilder sqlBuilder = new StringBuilder("SELECT COUNT(*) \n" +
@@ -92,7 +92,7 @@ public class QueryDAO {
         return rst.getLong(1);
     }
 
-    public List<CustomEntity> searchOrders(String query, int page, int size) throws SQLException {
+    public List<CustomEntity> findOrders(String query, int page, int size) throws SQLException {
         List<CustomEntity> orderList = new ArrayList<>();
 
             String[] searchWords = query.split("\\s");
@@ -130,5 +130,6 @@ public class QueryDAO {
             }
             return orderList;
     }
+
 
 }

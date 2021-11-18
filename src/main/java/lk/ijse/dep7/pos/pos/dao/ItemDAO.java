@@ -14,7 +14,7 @@ public class ItemDAO {
         ItemDAO.connection = connection;
     }
 
-    public void saveItem(Item item) throws SQLException {
+    public static void saveItem(Item item) throws SQLException {
         PreparedStatement pstm = connection.prepareStatement("INSERT INTO item (code, description, unit_price, qty_on_hand) VALUES (?,?,?,?)");
         pstm.setString(1, item.getCode());
         pstm.setString(2, item.getDescription());

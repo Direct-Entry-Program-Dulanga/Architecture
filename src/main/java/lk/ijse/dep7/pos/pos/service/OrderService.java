@@ -1,49 +1,61 @@
 package lk.ijse.dep7.pos.pos.service;
 
+import lk.ijse.dep7.pos.pos.dao.CustomerDAO;
 import lk.ijse.dep7.pos.pos.dao.OrderDAO;
+import lk.ijse.dep7.pos.pos.dao.OrderDetailDAO;
+import lk.ijse.dep7.pos.pos.dao.QueryDAO;
 import lk.ijse.dep7.pos.pos.dto.ItemDTO;
 import lk.ijse.dep7.pos.pos.dto.OrderDTO;
 import lk.ijse.dep7.pos.pos.dto.OrderDetailDTO;
-import lk.ijse.dep7.pos.pos.exception.DuplicateIdentifierException;
+import lk.ijse.dep7.pos.pos.entity.Customer;
+import lk.ijse.dep7.pos.pos.entity.Order;
 import lk.ijse.dep7.pos.pos.exception.FailedOperationException;
 import lk.ijse.dep7.pos.pos.exception.NotFoundException;
+import static lk.ijse.dep7.pos.pos.service.util.EntityDTOMapper.*;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.time.LocalDate;
 import java.util.List;
 
 public class OrderService {
 
     private Connection connection;
+    private CustomerDAO customerDAO;
     private OrderDAO orderDAO;
+    private OrderDetailDAO orderDetailDAO;
+    private QueryDAO queryDAO;
 
     public OrderService(Connection connection) {
+        this.connection = connection;
         this.orderDAO = new OrderDAO(connection);
+        this.orderDetailDAO = new OrderDetailDAO(connection);
+        this.queryDAO = new QueryDAO(connection);
+        this.customerDAO = new CustomerDAO(connection);
     }
 
-    public void saveOrder(String orderId, LocalDate orderDate, String customerId, List<OrderDetailDTO> orderDetails) throws FailedOperationException, DuplicateIdentifierException, NotFoundException {
+    public void saveOrder(OrderDTO order) throws SQLException {
 
         final CustomerService customerService = new CustomerService(connection);
         final ItemService itemService = new ItemService(connection);
+        final String orderId = order.getOrderId();
+        final String customerId = order.getCustomerId();
 
-        try {
             connection.setAutoCommit(false);
 
-            if (orderDAO.existOrder(orderId)) {
-                throw new DuplicateIdentifierException(orderId + " already exists");
+            if (orderDAO.existsOrderById(orderId)) {
+                throw new RuntimeException(order + " already exists");
             }
 
             if (!customerService.existCustomer(customerId)) {
-                throw new NotFoundException("Customer id doesn't exist");
+                throw new RuntimeException("Customer id doesn't exist");
             }
 
-            orderDAO.saveOrder(orderId, orderDate, customerId);
+            orderDAO.saveOrder(fromOrderDTO(order));
 
 //            stm = connection.prepareStatement("INSERT INTO order_detail (order_id, item_code, unit_price, qty) VALUES (?,?,?,?)");
 
-            for (OrderDetailDTO detail : orderDetails) {
-                orderDAO.saveOrderDetail(orderId, detail);
+            for (OrderDetailDTO detail : order.getOrderDetails()) {
+                orderDetailDAO.saveOrderDetail(fromOrderDTO(orderId, detail));
 
                 ItemDTO item = itemService.findItem(detail.getItemCode());
                 item.setQtyOnHand(item.getQtyOnHand() - detail.getQty());
@@ -51,42 +63,34 @@ public class OrderService {
             }
 
             connection.commit();
-
-        } catch (SQLException e) {
-            failedOperationExecutionContext(connection::rollback);
-        } catch (Throwable t) {
-            failedOperationExecutionContext(connection::rollback);
-            throw t;
-        } finally {
-            failedOperationExecutionContext(() -> connection.setAutoCommit(true));
-        }
-
     }
 
-    public List<OrderDTO> searchOrders(String query) {
-        return orderDAO.searchOrders(query);
+    public List<OrderDTO> searchOrders(String query) throws SQLException {
+        return toOrderDTO1(queryDAO.findOrders(query));
     }
 
-    public long getSearchOrdersCount(String query) {
-        return orderDAO.getSearchOrdersCount(query);
+    public long getSearchOrdersCount(String query) throws SQLException {
+        return queryDAO.countOrders(query);
     }
 
-    public List<OrderDTO> searchOrders(String query, int page, int size) {
-        return orderDAO.searchOrders(query, page, size);
+    public List<OrderDTO> searchOrders(String query, int page, int size) throws SQLException {
+        return toOrderDTO2(queryDAO.findOrders(query, page, size));
     }
 
-    public OrderDTO searchOrder(String orderId) throws NotFoundException, FailedOperationException {
-        List<OrderDetailDTO> orderDetails = findOrderDetails(orderId);
-        List<OrderDTO> orderDTOS = searchOrders(orderId);
-        orderDTOS.get(0).setOrderDetails(orderDetails);
-        return orderDTOS.get(0);
+    public OrderDTO searchOrder(String orderId) throws NotFoundException, FailedOperationException, SQLException {
+        Order order = orderDAO.findOrderById(orderId).get();
+        Customer customer = customerDAO.findCustomerById(order.getCustomerId()).get();
+        new OrderDTO(order.getId(),
+                order.getDate().toLocalDate(),
+                order.getCustomerId(),
+                customer.getName());
     }
 
     public List<OrderDetailDTO> findOrderDetails(String orderId) {
-        return orderDAO.findOrderDetails(orderId);
+        return null;
     }
 
-    public String generateNewOrderId() throws FailedOperationException {
+    public String generateNewOrderId() throws SQLException {
         String id = orderDAO.getLastOrderId();
         if (id != null) {
             return String.format("OD%03d", (Integer.parseInt(id.replace("OD", "")) + 1));

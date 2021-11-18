@@ -14,6 +14,13 @@ public class CustomEntity implements Serializable {
     public CustomEntity() {
     }
 
+    public CustomEntity(String orderId, Date orderDate, String customerId, String customerName) {
+        this.orderId = orderId;
+        this.orderDate = orderDate;
+        this.customerId = customerId;
+        CustomerName = customerName;
+    }
+
     public CustomEntity(String orderId, Date orderDate, String customerId, String customerName, BigDecimal orderTotal) {
         this.orderId = orderId;
         this.orderDate = orderDate;
