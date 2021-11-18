@@ -24,12 +24,14 @@ public class EntityDTOMapper {
     }
 
     public static List<CustomerDTO> toCustomerDTOList(List<Customer> customers){
-        return customers.stream().map(c -> toCustomerDTO(c)).collect(Collectors.toList());
+//        return customers.stream().map(c -> toCustomerDTO(c)).collect(Collectors.toList());
+        return customers.stream().map(EntityDTOMapper::toCustomerDTO).collect(Collectors.toList());
     }
 
-    public List<Customer> fromCustomerDTOList(List<CustomerDTO> customerDTOS){
+    public List<Customer> fromCustomerDTOList(List<CustomerDTO> customers){
 //        return customerDTOS.stream().map(c -> new Customer(c.getId(), c.getName(), c.getAddress())).collect(Collectors.toList());
-        return customerDTOS.stream().map(c -> fromCustomerDTO(c)).collect(Collectors.toList());
+//        return customerDTOS.stream().map(c -> fromCustomerDTO(c)).collect(Collectors.toList());
+        return customers.stream().map(EntityDTOMapper::fromCustomerDTO).collect(Collectors.toList());
     }
 
 
@@ -44,11 +46,13 @@ public class EntityDTOMapper {
     }
 
     public static List<ItemDTO> toItemDTOList(List<Item> items){
-        return items.stream().map(i -> toItemDTO(i)).collect(Collectors.toList());
+//        return items.stream().map(i -> toItemDTO(i)).collect(Collectors.toList());
+        return items.stream().map(EntityDTOMapper::toItemDTO).collect(Collectors.toList());
     }
 
-    public List<Item> fromItemDTOList(List<ItemDTO> itemDTOS){
-        return itemDTOS.stream().map(i -> fromItemDTO(i)).collect(Collectors.toList());
+    public List<Item> fromItemDTOList(List<ItemDTO> items){
+//        return itemDTOS.stream().map(i -> fromItemDTO(i)).collect(Collectors.toList());
+        return items.stream().map(EntityDTOMapper::fromItemDTO).collect(Collectors.toList());
     }
 
 
@@ -73,7 +77,7 @@ public class EntityDTOMapper {
 
     public static OrderDTO toOrderDTO(CustomEntity ce) {
         return new OrderDTO(ce.getOrderId(),
-                ce.getOrderDate().toLocalDate(),
+                ce.getOrderDate(),
                 ce.getCustomerId(),
                 ce.getCustomerName(),
                 ce.getOrderTotal());

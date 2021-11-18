@@ -3,6 +3,7 @@ package lk.ijse.dep7.pos.pos.dto;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Date;
 import java.util.List;
 
 public class OrderDTO implements Serializable {
@@ -13,7 +14,7 @@ public class OrderDTO implements Serializable {
     private BigDecimal orderTotal;
     private List<OrderDetailDTO> orderDetails;
 
-    public OrderDTO() {
+    public OrderDTO(String orderId, Date orderDate, String customerId, String customerName, BigDecimal orderTotal) {
     }
 
     public OrderDTO(String orderId, LocalDate orderDate, String customerId, String customerName, BigDecimal orderTotal) {
