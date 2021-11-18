@@ -10,16 +10,12 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lk.ijse.dep7.pos.pos.dto.CustomerDTO;
-import lk.ijse.dep7.pos.pos.exception.DuplicateIdentifierException;
-import lk.ijse.dep7.pos.pos.exception.FailedOperationException;
-import lk.ijse.dep7.pos.pos.exception.NotFoundException;
 import lk.ijse.dep7.pos.pos.service.CustomerService;
 
 import javax.sql.DataSource;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 

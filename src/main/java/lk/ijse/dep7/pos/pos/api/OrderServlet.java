@@ -10,7 +10,6 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lk.ijse.dep7.pos.pos.dto.OrderDTO;
-import lk.ijse.dep7.pos.pos.exception.DuplicateIdentifierException;
 import lk.ijse.dep7.pos.pos.exception.FailedOperationException;
 import lk.ijse.dep7.pos.pos.exception.NotFoundException;
 import lk.ijse.dep7.pos.pos.service.OrderService;
@@ -33,7 +32,7 @@ public class OrderServlet extends HttpServlet {
     public DataSource connectionPool;
 
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 
         try (Connection connection = connectionPool.getConnection()) {
             OrderService orderService = new OrderService(connection);
@@ -79,12 +78,14 @@ public class OrderServlet extends HttpServlet {
             throw new RuntimeException(ex);
         } catch (NotFoundException e) {
             resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
     }
 
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 
         if (req.getContentType() == null || !req.getContentType().equals("application/json")) {
             resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
@@ -125,19 +126,15 @@ public class OrderServlet extends HttpServlet {
 
             OrderService orderService = new OrderService(connection);
 
-            orderService.saveOrder(order.getOrderId(), order.getOrderDate(), order.getCustomerId(), order.getOrderDetails());
+            orderService.saveOrder(order);
             resp.setContentType("application/json");
             PrintWriter out = resp.getWriter();
             out.println(jsonb.toJson(order.getOrderId()));
 
         } catch (JsonbException exp) {
             resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
-        } catch (SQLException | RuntimeException | FailedOperationException exp) {
+        } catch (Exception exp) {
             throw new RuntimeException(exp);
-        } catch (DuplicateIdentifierException e) {
-            throw new RuntimeException("Order already exits", e);
-        } catch (NotFoundException e) {
-            resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Invalid order details");
         }
 
     }
