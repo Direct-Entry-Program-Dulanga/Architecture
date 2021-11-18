@@ -9,13 +9,16 @@ import lk.ijse.dep7.pos.pos.dto.OrderDTO;
 import lk.ijse.dep7.pos.pos.dto.OrderDetailDTO;
 import lk.ijse.dep7.pos.pos.entity.Customer;
 import lk.ijse.dep7.pos.pos.entity.Order;
+import lk.ijse.dep7.pos.pos.entity.OrderDetail;
 import lk.ijse.dep7.pos.pos.exception.FailedOperationException;
 import lk.ijse.dep7.pos.pos.exception.NotFoundException;
 import static lk.ijse.dep7.pos.pos.service.util.EntityDTOMapper.*;
 
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class OrderService {
 
@@ -33,13 +36,14 @@ public class OrderService {
         this.customerDAO = new CustomerDAO(connection);
     }
 
-    public void saveOrder(OrderDTO order) throws SQLException {
+    public void saveOrder(OrderDTO order) throws SQLException, FailedOperationException {
 
         final CustomerService customerService = new CustomerService(connection);
         final ItemService itemService = new ItemService(connection);
         final String orderId = order.getOrderId();
         final String customerId = order.getCustomerId();
 
+        try {
             connection.setAutoCommit(false);
 
             if (orderDAO.existsOrderById(orderId)) {
@@ -55,7 +59,7 @@ public class OrderService {
 //            stm = connection.prepareStatement("INSERT INTO order_detail (order_id, item_code, unit_price, qty) VALUES (?,?,?,?)");
 
             for (OrderDetailDTO detail : order.getOrderDetails()) {
-                orderDetailDAO.saveOrderDetail(fromOrderDTO(orderId, detail));
+                orderDetailDAO.saveOrderDetail(fromOrderDetailDTO(orderId, detail));
 
                 ItemDTO item = itemService.findItem(detail.getItemCode());
                 item.setQtyOnHand(item.getQtyOnHand() - detail.getQty());
@@ -63,6 +67,15 @@ public class OrderService {
             }
 
             connection.commit();
+        } catch (SQLException e) {
+            failedOperationExecutionContext(connection::rollback);
+            throw e;
+        } catch (Throwable t) {
+            failedOperationExecutionContext(connection::rollback);
+            throw t;
+        } finally {
+            failedOperationExecutionContext(() -> connection.setAutoCommit(true));
+        }
     }
 
     public List<OrderDTO> searchOrders(String query) throws SQLException {
@@ -77,13 +90,16 @@ public class OrderService {
         return toOrderDTO2(queryDAO.findOrders(query, page, size));
     }
 
-    public OrderDTO searchOrder(String orderId) throws NotFoundException, FailedOperationException, SQLException {
-        Order order = orderDAO.findOrderById(orderId).get();
+    public OrderDTO searchOrder(String orderId) throws Exception {
+        Order order = orderDAO.findOrderById(orderId).orElseThrow(() -> {
+            throw new RuntimeException("Invalid Order ID" + orderId);
+        });
         Customer customer = customerDAO.findCustomerById(order.getCustomerId()).get();
-        new OrderDTO(order.getId(),
-                order.getDate().toLocalDate(),
-                order.getCustomerId(),
-                customer.getName());
+        BigDecimal orderTotal = orderDetailDAO.findOrderTotal(orderId).get();
+        List<OrderDetail> orderDetails = orderDetailDAO.findOrderDetailsByOrderId(orderId);
+        List<OrderDetailDTO> orderDetailDTOList = orderDetails.stream().map(od -> new OrderDetailDTO(od.getOrderDetailPK().getItemCode(), od.getQty(), od.getUnitPrice())).collect(Collectors.toList());
+
+        return toOrderDTO(order, customer, orderTotal,orderDetails);
     }
 
     public List<OrderDetailDTO> findOrderDetails(String orderId) {

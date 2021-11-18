@@ -88,10 +88,25 @@ public class OrderDetailDAO {
         return rst.next();
     }
 
-    public Optional<BigDecimal> getOrderTotal(String orderId) throws SQLException {
+    public Optional<BigDecimal> findOrderTotal(String orderId) throws SQLException {
         PreparedStatement stm = connection.prepareStatement("SELECT order_id, SUM(unit_price * qty) as total FROM order_detail WHERE order_id=? GROUP BY order_id;");
         stm.setString(1, orderId);
         ResultSet rst = stm.executeQuery();
         return rst.next()? Optional.of(rst.getBigDecimal("total")): Optional.empty();
+    }
+
+    public List<OrderDetail> findOrderDetailsByOrderId(String orderId) throws Exception {
+        PreparedStatement stm = connection.prepareStatement("SELECT * FROM `order_detail` WHERE order_id =?");
+        stm.setString(1, orderId);
+        ResultSet rst = stm.executeQuery();
+        List<OrderDetail> orderDetails = new ArrayList<>();
+
+        while (rst.next()) {
+            orderDetails.add(new OrderDetail(rst.getString("order_id"),
+                    rst.getString("item_code"),
+                    rst.getBigDecimal("unit_price"),
+                    rst.getInt("qty")));
+        }
+        return orderDetails;
     }
 }

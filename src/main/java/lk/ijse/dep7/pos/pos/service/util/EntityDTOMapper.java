@@ -55,17 +55,17 @@ public class EntityDTOMapper {
 
 
 
-    public static Order fromOrderDTO(OrderDTO o){
-        return  new Order(o.getOrderId(), Date.valueOf(o.getOrderDate()), o.getCustomerId());
+    public static Order fromOrderDTO(OrderDTO o) {
+        return new Order(o.getOrderId(), Date.valueOf(o.getOrderDate()), o.getCustomerId());
     }
 
-    public static OrderDetail fromOrderDetailDTO(String orderId, OrderDetailDTO od){
-        return  new OrderDetail(orderId, od.getItemCode(), od.getUnitPrice(), od.getQty());
+    public static OrderDetail fromOrderDetailDTO(String orderId, OrderDetailDTO od) {
+        return new OrderDetail(orderId, od.getItemCode(), od.getUnitPrice(), od.getQty());
     }
 
     public static OrderDTO toOrderDTO(HashMap<String, Object> or) {
         return new OrderDTO(or.get("id").toString(),
-                ((Date)or.get("date")).toLocalDate(),
+                ((Date) or.get("date")).toLocalDate(),
                 or.get("customer_id").toString(),
                 or.get("name").toString(),
                 (BigDecimal) or.get("total"));
@@ -79,11 +79,32 @@ public class EntityDTOMapper {
                 ce.getOrderTotal());
     }
 
-    public static List<OrderDTO> toOrderDTO1(List<HashMap<String, Object>> orderRecords){
+    public static OrderDetailDTO toOrderDetailDTO(OrderDetail orderDetail) {
+        return new OrderDetailDTO(orderDetail.getOrderDetailPK().getItemCode(),
+                orderDetail.getQty(),
+                orderDetail.getUnitPrice());
+    }
+
+    public static List<OrderDetailDTO> toOrderDetailDTOList(List<OrderDetail> orderDetails) {
+        return orderDetails.stream().map(EntityDTOMapper::toOrderDetailDTO).collect(Collectors.toList());
+    }
+
+    public static OrderDTO toOrderDTO(Order order, Customer customer, BigDecimal orderTotal, List<OrderDetail> orderDetails) {
+        return new OrderDTO(order.getId(),
+                order.getDate().toLocalDate(),
+                order.getCustomerId(),
+                customer.getName(),
+                orderTotal,
+                // OrderDetail => OrderDetailDTO
+                // List<OrderDetail> => List<OrderDetailDTO>
+                toOrderDetailDTOList(orderDetails));
+    }
+
+    public static List<OrderDTO> toOrderDTO1(List<HashMap<String, Object>> orderRecords) {
         return orderRecords.stream().map(EntityDTOMapper::toOrderDTO).collect(Collectors.toList());
     }
 
-    public static List<OrderDTO> toOrderDTO2(List<CustomEntity> orderRecords){
+    public static List<OrderDTO> toOrderDTO2(List<CustomEntity> orderRecords) {
         return orderRecords.stream().map(EntityDTOMapper::toOrderDTO).collect(Collectors.toList());
     }
 
