@@ -24,11 +24,7 @@ public class ItemService {
         if (existItem(item.getCode())) {
             throw new RuntimeException(item.getCode() + " already exists");
         }
-        ItemDAOImpl.saveItem(fromItemDTO(item));
-    }
-
-    private boolean existItem(String code) throws SQLException {
-        return ItemDAOImpl.existItem(code);
+        itemDAOImpl.saveItem(fromItemDTO(item));
     }
 
     public void updateItem(ItemDTO item) throws SQLException {
@@ -55,6 +51,14 @@ public class ItemService {
 
     public List<ItemDTO> findAllItems(int page, int size) throws SQLException {
         return toItemDTOList(itemDAOImpl.findAllItems(page, size));
+    }
+
+    public long getItemsCount() throws Exception {
+        return itemDAOImpl.countItems();
+    }
+
+    boolean existItem(String code) throws SQLException {
+        return itemDAOImpl.existsItemByCode(code);
     }
 
     public String generateNewItemCode() throws SQLException {

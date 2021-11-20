@@ -29,14 +29,6 @@ public class CustomerService {
         customerDAOImpl.saveCustomer(fromCustomerDTO(customer));
     }
 
-    public long getCustomersCount() throws Exception {
-        return customerDAOImpl.countCustomers();
-    }
-
-    boolean existCustomer(String id) throws SQLException {
-        return customerDAOImpl.existsCustomerById(id);
-    }
-
     public void updateCustomer(CustomerDTO customer) throws SQLException {
         if (!existCustomer(customer.getId())) {
             throw new RuntimeException("There is no such customer associated with the id " + customer.getId());
@@ -76,6 +68,14 @@ public class CustomerService {
 //        return customerDAO.(page, size);
 //        return customerDAO.findAllCustomers(page, size).stream().map(c -> new CustomerDTO(c.getId(), c.getName(), c.getAddress())).collect(Collectors.toList());
         return toCustomerDTOList(customerDAOImpl.findAllCustomers(page, size));
+    }
+
+    public long getCustomersCount() throws Exception {
+        return customerDAOImpl.countCustomers();
+    }
+
+    boolean existCustomer(String id) throws SQLException {
+        return customerDAOImpl.existsCustomerById(id);
     }
 
     public String generateNewCustomerId() throws SQLException {

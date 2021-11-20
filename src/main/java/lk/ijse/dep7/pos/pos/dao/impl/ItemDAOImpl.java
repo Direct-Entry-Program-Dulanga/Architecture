@@ -1,5 +1,6 @@
 package lk.ijse.dep7.pos.pos.dao.impl;
 
+import lk.ijse.dep7.pos.pos.dao.ItemDAO;
 import lk.ijse.dep7.pos.pos.entity.Item;
 
 import java.sql.*;
@@ -7,22 +8,23 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class ItemDAOImpl {
+public class ItemDAOImpl implements ItemDAO {
     private static Connection connection;
 
     public ItemDAOImpl(Connection connection) {
         ItemDAOImpl.connection = connection;
     }
-
-    public static void saveItem(Item item) throws SQLException {
-        PreparedStatement pstm = connection.prepareStatement("INSERT INTO item (code, description, unit_price, qty_on_hand) VALUES (?,?,?,?)");
-        pstm.setString(1, item.getCode());
-        pstm.setString(2, item.getDescription());
-        pstm.setBigDecimal(3, item.getUnitPrice());
-        pstm.setInt(4, item.getQtyOnHand());
-        pstm.executeUpdate();
+    @Override
+    public void saveItem(Item item) throws SQLException {
+        PreparedStatement pst = connection.prepareStatement("INSERT INTO item (code, description, unit_price, qty_on_hand) VALUES (?,?,?,?)");
+        pst.setString(1, item.getCode());
+        pst.setString(2, item.getDescription());
+        pst.setBigDecimal(3, item.getUnitPrice());
+        pst.setInt(4, item.getQtyOnHand());
+        pst.executeUpdate();
     }
 
+    @Override
     public void updateItem(Item item) throws SQLException {
         PreparedStatement pstm = connection.prepareStatement("UPDATE item SET description=?, unit_price=?, qty_on_hand=? WHERE code=?");
         pstm.setString(1, item.getCode());
@@ -32,12 +34,14 @@ public class ItemDAOImpl {
         pstm.executeUpdate();
     }
 
+    @Override
     public void deleteItemByCode(String itemCode) throws SQLException {
         PreparedStatement pstm = connection.prepareStatement("DELETE FROM item WHERE code=?");
         pstm.setString(1, itemCode);
         pstm.executeUpdate();
     }
 
+    @Override
     public Optional<Item> findItemByCode(String itemCode) throws SQLException {
         PreparedStatement pstm = connection.prepareStatement("SELECT * FROM item WHERE code=?");
         pstm.setString(1, itemCode);
@@ -46,6 +50,7 @@ public class ItemDAOImpl {
                 Optional.empty();
     }
 
+    @Override
     public List<Item> findAllItems() throws SQLException {
         List<Item> itemList = new ArrayList<>();
         Statement stm = connection.createStatement();
@@ -57,7 +62,8 @@ public class ItemDAOImpl {
         return itemList;
     }
 
-    public static List<Item> findAllItems(int page, int size) throws SQLException {
+    @Override
+    public List<Item> findAllItems(int page, int size) throws SQLException {
         PreparedStatement stm = connection.prepareStatement("SELECT * FROM item LIMIT ? OFFSET ?;");
         stm.setObject(1, size);
         stm.setObject(2, size * (page - 1));
@@ -70,11 +76,13 @@ public class ItemDAOImpl {
         return itemList;
     }
 
-    public static String getLastItemCode() throws SQLException {
+    @Override
+    public String getLastItemCode() throws SQLException {
         ResultSet rst = connection.createStatement().executeQuery("SELECT code FROM item ORDER BY code DESC LIMIT 1;");
         return rst.next()? rst.getString("code"): null;
     }
 
+    @Override
     public long countItems() throws Exception {
         Statement stm = connection.createStatement();
         ResultSet rst = stm.executeQuery("SELECT COUNT(*) FROM item");
@@ -82,10 +90,11 @@ public class ItemDAOImpl {
         return rst.getLong(1);
     }
 
-    public static boolean existItem(String itemCode) throws SQLException {
-        PreparedStatement pstm = connection.prepareStatement("SELECT code FROM item WHERE code=?");
-        pstm.setString(1, itemCode);
-        return pstm.executeQuery().next();
+    @Override
+    public boolean existsItemByCode(String itemCode) throws SQLException {
+        PreparedStatement stm = connection.prepareStatement("SELECT code FROM item WHERE code=?");
+        stm.setString(1, itemCode);
+        return stm.executeQuery().next();
     }
 
 }
