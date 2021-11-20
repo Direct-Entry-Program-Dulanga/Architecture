@@ -1,5 +1,9 @@
 package lk.ijse.dep7.pos.pos.service;
 
+import lk.ijse.dep7.pos.pos.dao.CustomerDAO;
+import lk.ijse.dep7.pos.pos.dao.OrderDAO;
+import lk.ijse.dep7.pos.pos.dao.OrderDetailDAO;
+import lk.ijse.dep7.pos.pos.dao.QueryDAO;
 import lk.ijse.dep7.pos.pos.dao.impl.CustomerDAOImpl;
 import lk.ijse.dep7.pos.pos.dao.impl.OrderDAOImpl;
 import lk.ijse.dep7.pos.pos.dao.impl.OrderDetailDAOImpl;
@@ -22,20 +26,20 @@ import java.util.List;
 public class OrderService {
 
     private Connection connection;
-    private CustomerDAOImpl customerDAOImpl;
-    private OrderDAOImpl orderDAOImpl;
-    private OrderDetailDAOImpl orderDetailDAOImpl;
-    private QueryDAOImpl queryDAOImpl;
+    private CustomerDAO customerDAO;
+    private OrderDAO orderDAO;
+    private OrderDetailDAO orderDetailDAO;
+    private QueryDAO queryDAO;
 
     public OrderService(Connection connection) {
         this.connection = connection;
-        this.orderDAOImpl = new OrderDAOImpl(connection);
-        this.orderDetailDAOImpl = new OrderDetailDAOImpl(connection);
-        this.queryDAOImpl = new QueryDAOImpl(connection);
-        this.customerDAOImpl = new CustomerDAOImpl(connection);
+        this.orderDAO = new OrderDAOImpl(connection);
+        this.orderDetailDAO = new OrderDetailDAOImpl(connection);
+        this.queryDAO = new QueryDAOImpl(connection);
+        this.customerDAO = new CustomerDAOImpl(connection);
     }
 
-    public void saveOrder(OrderDTO order) throws SQLException, FailedOperationException {
+    public void saveOrder(OrderDTO order) throws Exception {
 
         final CustomerService customerService = new CustomerService(connection);
         final ItemService itemService = new ItemService(connection);
@@ -45,7 +49,7 @@ public class OrderService {
         try {
             connection.setAutoCommit(false);
 
-            if (orderDAOImpl.existsOrderById(orderId)) {
+            if (orderDAO.existsOrderById(orderId)) {
                 throw new RuntimeException(order + " already exists");
             }
 
@@ -53,12 +57,12 @@ public class OrderService {
                 throw new RuntimeException("Customer id doesn't exist");
             }
 
-            orderDAOImpl.saveOrder(fromOrderDTO(order));
+            orderDAO.saveOrder(fromOrderDTO(order));
 
 //            stm = connection.prepareStatement("INSERT INTO order_detail (order_id, item_code, unit_price, qty) VALUES (?,?,?,?)");
 
             for (OrderDetailDTO detail : order.getOrderDetails()) {
-                orderDetailDAOImpl.saveOrderDetail(fromOrderDetailDTO(orderId, detail));
+                orderDetailDAO.saveOrderDetail(fromOrderDetailDTO(orderId, detail));
 
                 ItemDTO item = itemService.findItem(detail.getItemCode());
                 item.setQtyOnHand(item.getQtyOnHand() - detail.getQty());
@@ -77,25 +81,25 @@ public class OrderService {
         }
     }
 
-    public List<OrderDTO> searchOrders(String query) throws SQLException {
-        return toOrderDTO1(queryDAOImpl.findOrders(query));
+    public List<OrderDTO> searchOrders(String query) throws Exception {
+        return toOrderDTO1(queryDAO.findOrders(query));
     }
 
-    public long getSearchOrdersCount(String query) throws SQLException {
-        return queryDAOImpl.countOrders(query);
+    public long getSearchOrdersCount(String query) throws Exception {
+        return queryDAO.countOrders(query);
     }
 
-    public List<OrderDTO> searchOrders(String query, int page, int size) throws SQLException {
-        return toOrderDTO2(queryDAOImpl.findOrders(query, page, size));
+    public List<OrderDTO> searchOrders(String query, int page, int size) throws Exception {
+        return toOrderDTO2(queryDAO.findOrders(query, page, size));
     }
 
     public OrderDTO searchOrder(String orderId) throws Exception {
-        Order order = orderDAOImpl.findOrderById(orderId).<RuntimeException>orElseThrow(() -> {
+        Order order = orderDAO.findOrderById(orderId).<RuntimeException>orElseThrow(() -> {
             throw new RuntimeException("Invalid Order ID" + orderId);
         });
-        Customer customer = customerDAOImpl.findCustomerById(order.getCustomerId()).get();
-        BigDecimal orderTotal = orderDetailDAOImpl.findOrderTotal(orderId).get();
-        List<OrderDetail> orderDetails = orderDetailDAOImpl.findOrderDetailsByOrderId(orderId);
+        Customer customer = customerDAO.findCustomerById(order.getCustomerId()).get();
+        BigDecimal orderTotal = orderDetailDAO.findOrderTotal(orderId).get();
+        List<OrderDetail> orderDetails = orderDetailDAO.findOrderDetailsByOrderId(orderId);
         return toOrderDTO(order, customer, orderTotal,orderDetails);
     }
 
@@ -103,8 +107,8 @@ public class OrderService {
         return null;
     }
 
-    public String generateNewOrderId() throws SQLException {
-        String id = orderDAOImpl.getLastOrderId();
+    public String generateNewOrderId() throws Exception {
+        String id = orderDAO.getLastOrderId();
         if (id != null) {
             return String.format("OD%03d", (Integer.parseInt(id.replace("OD", "")) + 1));
         } else {

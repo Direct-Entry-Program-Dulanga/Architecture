@@ -1,5 +1,6 @@
 package lk.ijse.dep7.pos.pos.service;
 
+import lk.ijse.dep7.pos.pos.dao.ItemDAO;
 import lk.ijse.dep7.pos.pos.dao.impl.ItemDAOImpl;
 import lk.ijse.dep7.pos.pos.dto.ItemDTO;
 import static lk.ijse.dep7.pos.pos.service.util.EntityDTOMapper.*;
@@ -11,59 +12,59 @@ import java.util.List;
 public class ItemService {
 
     private Connection connection;
-    private ItemDAOImpl itemDAOImpl;
+    private ItemDAO itemDAO;
 
     public ItemService() {
     }
 
     public ItemService(Connection connection) {
-        this.itemDAOImpl = new ItemDAOImpl(connection);
+        this.itemDAO = new ItemDAOImpl(connection);
     }
 
-    public void saveItem(ItemDTO item) throws SQLException {
+    public void saveItem(ItemDTO item) throws Exception {
         if (existItem(item.getCode())) {
             throw new RuntimeException(item.getCode() + " already exists");
         }
-        itemDAOImpl.saveItem(fromItemDTO(item));
+        itemDAO.saveItem(fromItemDTO(item));
     }
 
-    public void updateItem(ItemDTO item) throws SQLException {
+    public void updateItem(ItemDTO item) throws Exception {
         if (!existItem(item.getCode())) {
             throw new RuntimeException("There is no such item associated with the code " + item.getCode());
         }
-        itemDAOImpl.updateItem(fromItemDTO(item));
+        itemDAO.updateItem(fromItemDTO(item));
     }
 
-    public void deleteItem(String code) throws SQLException {
+    public void deleteItem(String code) throws Exception {
         if (!existItem(code)) {
             throw new RuntimeException("There is no such item associated with the code " + code);
         }
-        itemDAOImpl.deleteItemByCode(code);
+        itemDAO.deleteItemByCode(code);
     }
 
-    public ItemDTO findItem(String code) throws SQLException {
-        return toItemDTO(itemDAOImpl.findItemByCode(code).<RuntimeException>orElseThrow(() -> {throw new RuntimeException("There is no such customer associated with the id " + code);}));
+    public ItemDTO findItem(String code) throws Exception {
+        return toItemDTO(itemDAO.findItemByCode(code).<RuntimeException>orElseThrow(() -> {throw new RuntimeException("There is no such customer associated with the id " + code);}));
     }
 
-    public List<ItemDTO> findAllItems() throws SQLException {
-        return toItemDTOList(itemDAOImpl.findAllItems());
+    public List<ItemDTO> findAllItems() throws Exception {
+        return toItemDTOList(itemDAO.findAllItems());
     }
 
-    public List<ItemDTO> findAllItems(int page, int size) throws SQLException {
-        return toItemDTOList(itemDAOImpl.findAllItems(page, size));
+    public List<ItemDTO> findAllItems(int page, int size) throws Exception {
+        return toItemDTOList(itemDAO.findAllItems(page, size));
     }
 
     public long getItemsCount() throws Exception {
-        return itemDAOImpl.countItems();
+        return itemDAO.countItems();
     }
 
-    boolean existItem(String code) throws SQLException {
-        return itemDAOImpl.existsItemByCode(code);
+    boolean existItem(String code) throws Exception {
+        return itemDAO.existsItemByCode(code);
     }
 
-    public String generateNewItemCode() throws SQLException {
+    public String generateNewItemCode() throws Exception {
 
-        String code = itemDAOImpl.getLastItemCode();
+        String code = itemDAO.getLastItemCode();
         if (code != null) {
 
             int newItemCode = Integer.parseInt(code.replace("I", "")) + 1;

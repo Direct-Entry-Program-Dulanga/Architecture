@@ -1,5 +1,6 @@
 package lk.ijse.dep7.pos.pos.service;
 
+import lk.ijse.dep7.pos.pos.dao.CustomerDAO;
 import lk.ijse.dep7.pos.pos.dao.impl.CustomerDAOImpl;
 import lk.ijse.dep7.pos.pos.dto.CustomerDTO;
 
@@ -12,38 +13,38 @@ import java.util.List;
 public class CustomerService {
 
     private Connection connection;
-    private CustomerDAOImpl customerDAOImpl;
+    private CustomerDAO customerDAO;
 
     public CustomerService() {
 
     }
 
     public CustomerService(Connection connection) {
-        this.customerDAOImpl = new CustomerDAOImpl(connection);
+        this.customerDAO = new CustomerDAOImpl(connection);
     }
 
-    public void saveCustomer(CustomerDTO customer) throws SQLException {
+    public void saveCustomer(CustomerDTO customer) throws Exception {
         if (existCustomer(customer.getId())) {
             throw new RuntimeException(customer.getId() + " already exists");
         }
-        customerDAOImpl.saveCustomer(fromCustomerDTO(customer));
+        customerDAO.saveCustomer(fromCustomerDTO(customer));
     }
 
-    public void updateCustomer(CustomerDTO customer) throws SQLException {
+    public void updateCustomer(CustomerDTO customer) throws Exception {
         if (!existCustomer(customer.getId())) {
             throw new RuntimeException("There is no such customer associated with the id " + customer.getId());
         }
-        customerDAOImpl.updateCustomer(fromCustomerDTO(customer));
+        customerDAO.updateCustomer(fromCustomerDTO(customer));
     }
 
-    public void deleteCustomer(String id) throws SQLException {
+    public void deleteCustomer(String id) throws Exception {
         if (!existCustomer(id)) {
             throw new RuntimeException("There is no such customer associated with the id " + id);
         }
-        customerDAOImpl.deleteCustomerById(id);
+        customerDAO.deleteCustomerById(id);
     }
 
-    public CustomerDTO findCustomer(String id) throws SQLException {
+    public CustomerDTO findCustomer(String id) throws Exception {
 //        Optional<Customer> optCustomer = customerDAO.findCustomerById(id);
 //        if(optCustomer.isPresent()){
 //            throw new RuntimeException("There is no such customer associated with the id " + id);
@@ -51,36 +52,36 @@ public class CustomerService {
 //            Customer customer = optCustomer.get();
 //            return new CustomerDTO(customer.getId(), customer.getName(), customer.getAddress());
 //        }
-        return toCustomerDTO(customerDAOImpl.findCustomerById(id).<RuntimeException>orElseThrow(() -> {throw new RuntimeException("There is no such customer associated with the id " + id);}));
+        return toCustomerDTO(customerDAO.findCustomerById(id).<RuntimeException>orElseThrow(() -> {throw new RuntimeException("There is no such customer associated with the id " + id);}));
     }
 
-    public List<CustomerDTO> findAllCustomers() throws SQLException {
+    public List<CustomerDTO> findAllCustomers() throws Exception {
 //        List<Customer> allCustomers = customerDAO.findAllCustomers();
 //        List<CustomerDTO> dtoList = new ArrayList<>();
 //        allCustomers.forEach(c -> dtoList.add(new CustomerDTO(c.getId(), c.getName(), c.getAddress())));
 //        return dtoList;
 
 //        return customerDAO.findAllCustomers().stream().map(c -> new CustomerDTO(c.getId(), c.getName(), c.getAddress())).collect(Collectors.toList());
-        return toCustomerDTOList(customerDAOImpl.findAllCustomers());
+        return toCustomerDTOList(customerDAO.findAllCustomers());
     }
 
-    public List<CustomerDTO> findAllCustomers(int page, int size) throws SQLException {
+    public List<CustomerDTO> findAllCustomers(int page, int size) throws Exception {
 //        return customerDAO.(page, size);
 //        return customerDAO.findAllCustomers(page, size).stream().map(c -> new CustomerDTO(c.getId(), c.getName(), c.getAddress())).collect(Collectors.toList());
-        return toCustomerDTOList(customerDAOImpl.findAllCustomers(page, size));
+        return toCustomerDTOList(customerDAO.findAllCustomers(page, size));
     }
 
     public long getCustomersCount() throws Exception {
-        return customerDAOImpl.countCustomers();
+        return customerDAO.countCustomers();
     }
 
-    boolean existCustomer(String id) throws SQLException {
-        return customerDAOImpl.existsCustomerById(id);
+    boolean existCustomer(String id) throws Exception {
+        return customerDAO.existsCustomerById(id);
     }
 
-    public String generateNewCustomerId() throws SQLException {
+    public String generateNewCustomerId() throws Exception {
 
-        String id = customerDAOImpl.getLastCustomerId();
+        String id = customerDAO.getLastCustomerId();
         if (id != null) {
 
             int newCustomerId = Integer.parseInt(id.replace("C", "")) + 1;
