@@ -1,5 +1,6 @@
 package lk.ijse.dep7.pos.pos.dao.impl;
 
+import lk.ijse.dep7.pos.pos.dao.QueryDAO;
 import lk.ijse.dep7.pos.pos.entity.CustomEntity;
 
 import java.sql.Connection;
@@ -10,7 +11,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class QueryDAOImpl {
+public class QueryDAOImpl implements QueryDAO {
 
     private final Connection connection;
 
@@ -18,6 +19,7 @@ public class QueryDAOImpl {
         this.connection = connection;
     }
 
+    @Override
     public List<HashMap<String, Object>> findOrders(String query) throws SQLException {
         List<HashMap<String, Object>> orderList = new ArrayList<>();
 
@@ -60,7 +62,7 @@ public class QueryDAOImpl {
         return orderList;
     }
 
-
+    @Override
     public long countOrders(String query) throws SQLException {
         String[] searchWords = query.split("\\s");
         StringBuilder sqlBuilder = new StringBuilder("SELECT COUNT(*) \n" +
@@ -92,6 +94,7 @@ public class QueryDAOImpl {
         return rst.getLong(1);
     }
 
+    @Override
     public List<CustomEntity> findOrders(String query, int page, int size) throws SQLException {
         List<CustomEntity> orderList = new ArrayList<>();
 
