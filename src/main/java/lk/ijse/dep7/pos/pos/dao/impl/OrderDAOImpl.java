@@ -18,7 +18,8 @@ public class OrderDAOImpl implements OrderDAO {
     }
 
     @Override
-    public void saveOrder(Order order) throws SQLException {
+    public void save(Object entity) throws SQLException {
+        Order order = (Order) entity;
         PreparedStatement stm = connection.prepareStatement("INSERT INTO `order` values (?,?,?)");
         stm.setString(1, order.getId());
         stm.setDate(2, order.getDate());
@@ -27,7 +28,8 @@ public class OrderDAOImpl implements OrderDAO {
     }
 
     @Override
-    public void updateOrder(Order order) throws SQLException {
+    public void update(Object entity) throws SQLException {
+        Order order = (Order) entity;
         PreparedStatement stm = connection.prepareStatement("UPDATE `order` SET date=?, customer_id=? WHERE id=?");
         stm.setDate(2, order.getDate());
         stm.setString(3, order.getCustomerId());
@@ -36,23 +38,23 @@ public class OrderDAOImpl implements OrderDAO {
     }
 
     @Override
-    public void deleteOrderById(String orderId) throws SQLException {
+    public void deleteById(Object key) throws SQLException {
         PreparedStatement stm = connection.prepareStatement("DELETE FROM `order` WHERE id=?");
-        stm.setString(1, orderId);
+        stm.setString(1, key.toString());
         stm.executeUpdate();
     }
 
     @Override
-    public Optional<Order> findOrderById(String orderId) throws SQLException {
-        PreparedStatement pstm = connection.prepareStatement("SELECT * FROM `order` WHERE id=?");
-        pstm.setString(1, orderId);
-        ResultSet rst = pstm.executeQuery();
-        return  (rst.next()) ? Optional.of(new Order(orderId, rst.getDate("date"), rst.getString("customer_id"))) : Optional.empty();
+    public Optional<Object> findById(Object key) throws SQLException {
+        PreparedStatement stm = connection.prepareStatement("SELECT * FROM `order` WHERE id=?");
+        stm.setString(1, key.toString());
+        ResultSet rst = stm.executeQuery();
+        return  (rst.next()) ? Optional.of(new Order(key.toString(), rst.getDate("date"), rst.getString("customer_id"))) : Optional.empty();
     }
 
     @Override
-    public List<Order> findAllOrders() throws SQLException {
-        List<Order> ordersList = new ArrayList<>();
+    public List<Object> findAll() throws SQLException {
+        List<Object> ordersList = new ArrayList<>();
 
         Statement stm = connection.createStatement();
         ResultSet rst = stm.executeQuery("SELECT * FROM `order`");
@@ -65,7 +67,22 @@ public class OrderDAOImpl implements OrderDAO {
     }
 
     @Override
-    public long countOrders() throws SQLException {
+    public List<Object> findAll(int page, int size) throws Exception {
+        PreparedStatement stm = connection.prepareStatement("SELECT * FROM item LIMIT ? OFFSET ?;");
+        stm.setObject(1, size);
+        stm.setObject(2, size*(page -1));
+        ResultSet rst = stm.executeQuery();
+        List<Object> orderList = new ArrayList<>();
+
+        while(rst.next()){
+            orderList.add(new Order(rst.getString("id"), rst.getDate("date"), rst.getString("customer_id")));
+        }
+
+        return orderList;
+    }
+
+    @Override
+    public long count() throws SQLException {
         Statement stm = connection.createStatement();
         ResultSet rst = stm.executeQuery("SELECT COUNT(*) FROM `order`");
         rst.next();
@@ -73,16 +90,16 @@ public class OrderDAOImpl implements OrderDAO {
     }
 
     @Override
-    public String getLastOrderId() throws SQLException {
-            ResultSet rst = connection.createStatement().executeQuery("SELECT id FROM `order` ORDER BY id DESC LIMIT 1;");
-            return rst.next()? rst.getString("id"): null;
+    public boolean existsById(Object key) throws SQLException {
+        PreparedStatement stm = connection.prepareStatement("SELECT id FROM `order` WHERE id=?");
+        stm.setString(1, key.toString());
+        return stm.executeQuery().next();
     }
 
     @Override
-    public boolean existsOrderById(String orderId) throws SQLException {
-        PreparedStatement stm = connection.prepareStatement("SELECT id FROM `order` WHERE id=?");
-        stm.setString(1, orderId);
-        return stm.executeQuery().next();
+    public String getLastOrderId() throws SQLException {
+        ResultSet rst = connection.createStatement().executeQuery("SELECT id FROM `order` ORDER BY id DESC LIMIT 1;");
+        return rst.next()? rst.getString("id"): null;
     }
 
 

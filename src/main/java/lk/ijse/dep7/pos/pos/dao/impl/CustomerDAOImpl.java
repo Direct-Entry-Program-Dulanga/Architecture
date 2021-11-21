@@ -17,7 +17,8 @@ public class CustomerDAOImpl implements CustomerDAO {
     }
 
     @Override
-    public void saveCustomer(Customer customer) throws SQLException {
+    public void save(Object entity) throws SQLException {
+        Customer customer = (Customer) entity;
         PreparedStatement stm = connection.prepareStatement("INSERT INTO customer values (?,?,?)");
         stm.setString(1, customer.getId());
         stm.setString(2, customer.getName());
@@ -26,7 +27,8 @@ public class CustomerDAOImpl implements CustomerDAO {
     }
 
     @Override
-    public void updateCustomer(Customer customer) throws SQLException {
+    public void update(Object entity) throws SQLException {
+        Customer customer = (Customer) entity;
         PreparedStatement stm = connection.prepareStatement("UPDATE customer SET name=?, address=? WHERE id=?");
         stm.setString(1, customer.getId());
         stm.setString(2, customer.getName());
@@ -35,24 +37,24 @@ public class CustomerDAOImpl implements CustomerDAO {
     }
 
     @Override
-    public void deleteCustomerById(String customerId) throws SQLException {
+    public void deleteById(Object key) throws SQLException {
         PreparedStatement stm = connection.prepareStatement("DELETE FROM customer WHERE id=?");
-        stm.setString(1, customerId);
+        stm.setString(1, key.toString());
         stm.executeUpdate();
     }
 
     @Override
-    public Optional<Customer> findCustomerById(String customerId) throws SQLException {
+    public Optional<Object> findById(Object key) throws SQLException {
         PreparedStatement stm = connection.prepareStatement("SELECT * FROM customer WHERE id=?");
-        stm.setString(1, customerId);
+        stm.setString(1, key.toString());
         ResultSet rst = stm.executeQuery();
-        return (rst.next())? Optional.of(new Customer(customerId, rst.getString("name"), rst.getString("address")))
+        return (rst.next())? Optional.of(new Customer(key.toString(), rst.getString("name"), rst.getString("address")))
             : Optional.empty();
     }
 
     @Override
-    public List<Customer> findAllCustomers() throws SQLException {
-        List<Customer> customersList = new ArrayList<>();
+    public List<Object> findAll() throws SQLException {
+        List<Object> customersList = new ArrayList<>();
 
         Statement stm = connection.createStatement();
         ResultSet rst = stm.executeQuery("SELECT * FROM customer");
@@ -65,12 +67,12 @@ public class CustomerDAOImpl implements CustomerDAO {
     }
 
     @Override
-    public List<Customer> findAllCustomers(int page, int size) throws SQLException {
+    public List<Object> findAll(int page, int size) throws SQLException {
         PreparedStatement stm = connection.prepareStatement("SELECT * FROM customer LIMIT ? OFFSET ?;");
         stm.setObject(1, size);
         stm.setObject(2, size * (page - 1));
         ResultSet rst = stm.executeQuery();
-        List<Customer> customersList = new ArrayList<>();
+        List<Object> customersList = new ArrayList<>();
 
         while (rst.next()) {
             customersList.add(new Customer(rst.getString("id"), rst.getString("name"), rst.getString("address")));
@@ -79,13 +81,7 @@ public class CustomerDAOImpl implements CustomerDAO {
     }
 
     @Override
-    public String getLastCustomerId() throws SQLException {
-        ResultSet rst = connection.createStatement().executeQuery("SELECT id FROM customer ORDER BY id DESC LIMIT 1;");
-        return rst.next()? rst.getString("id"): null;
-    }
-
-    @Override
-    public long countCustomers() throws Exception {
+    public long count() throws Exception {
         Statement stm = connection.createStatement();
         ResultSet rst = stm.executeQuery("SELECT COUNT(*) FROM customer");
         rst.next();
@@ -93,9 +89,15 @@ public class CustomerDAOImpl implements CustomerDAO {
     }
 
     @Override
-    public boolean existsCustomerById(String customerId) throws SQLException {
-        PreparedStatement pstm = connection.prepareStatement("SELECT id FROM customer WHERE id=?");
-        pstm.setString(1, customerId);
-        return pstm.executeQuery().next();
+    public boolean existsById(Object key) throws SQLException {
+        PreparedStatement stm = connection.prepareStatement("SELECT id FROM customer WHERE id=?");
+        stm.setString(1, key.toString());
+        return stm.executeQuery().next();
+    }
+
+    @Override
+    public String getLastCustomerId() throws SQLException {
+        ResultSet rst = connection.createStatement().executeQuery("SELECT id FROM customer ORDER BY id DESC LIMIT 1;");
+        return rst.next()? rst.getString("id"): null;
     }
 }

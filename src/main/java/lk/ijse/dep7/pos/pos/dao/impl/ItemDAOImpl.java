@@ -15,44 +15,46 @@ public class ItemDAOImpl implements ItemDAO {
         ItemDAOImpl.connection = connection;
     }
     @Override
-    public void saveItem(Item item) throws SQLException {
-        PreparedStatement pst = connection.prepareStatement("INSERT INTO item (code, description, unit_price, qty_on_hand) VALUES (?,?,?,?)");
-        pst.setString(1, item.getCode());
-        pst.setString(2, item.getDescription());
-        pst.setBigDecimal(3, item.getUnitPrice());
-        pst.setInt(4, item.getQtyOnHand());
-        pst.executeUpdate();
+    public void save(Object entity) throws SQLException {
+        Item item = (Item) entity;
+        PreparedStatement stm = connection.prepareStatement("INSERT INTO item (code, description, unit_price, qty_on_hand) VALUES (?,?,?,?)");
+        stm.setString(1, item.getCode());
+        stm.setString(2, item.getDescription());
+        stm.setBigDecimal(3, item.getUnitPrice());
+        stm.setInt(4, item.getQtyOnHand());
+        stm.executeUpdate();
     }
 
     @Override
-    public void updateItem(Item item) throws SQLException {
-        PreparedStatement pstm = connection.prepareStatement("UPDATE item SET description=?, unit_price=?, qty_on_hand=? WHERE code=?");
-        pstm.setString(1, item.getCode());
-        pstm.setString(2, item.getDescription());
-        pstm.setBigDecimal(3, item.getUnitPrice());
-        pstm.setInt(4, item.getQtyOnHand());
-        pstm.executeUpdate();
+    public void update(Object entity) throws SQLException {
+        Item item = (Item) entity;
+        PreparedStatement stm = connection.prepareStatement("UPDATE item SET description=?, unit_price=?, qty_on_hand=? WHERE code=?");
+        stm.setString(1, item.getCode());
+        stm.setString(2, item.getDescription());
+        stm.setBigDecimal(3, item.getUnitPrice());
+        stm.setInt(4, item.getQtyOnHand());
+        stm.executeUpdate();
     }
 
     @Override
-    public void deleteItemByCode(String itemCode) throws SQLException {
+    public void deleteById(Object key) throws SQLException {
         PreparedStatement pstm = connection.prepareStatement("DELETE FROM item WHERE code=?");
-        pstm.setString(1, itemCode);
+        pstm.setString(1, key.toString());
         pstm.executeUpdate();
     }
 
     @Override
-    public Optional<Item> findItemByCode(String itemCode) throws SQLException {
+    public Optional<Object> findById(Object key) throws Exception {
         PreparedStatement pstm = connection.prepareStatement("SELECT * FROM item WHERE code=?");
-        pstm.setString(1, itemCode);
+        pstm.setString(1, key.toString());
         ResultSet rst = pstm.executeQuery();
-        return  (rst.next()) ? Optional.of(new Item(itemCode, rst.getString("description"), rst.getBigDecimal("unit_price"), rst.getInt("qty_on_hand"))) :
+        return  (rst.next()) ? Optional.of(new Item(key.toString(), rst.getString("description"), rst.getBigDecimal("unit_price"), rst.getInt("qty_on_hand"))) :
                 Optional.empty();
     }
 
     @Override
-    public List<Item> findAllItems() throws SQLException {
-        List<Item> itemList = new ArrayList<>();
+    public List<Object> findAll() throws SQLException {
+        List<Object> itemList = new ArrayList<>();
         Statement stm = connection.createStatement();
         ResultSet rst = stm.executeQuery("SELECT * FROM item");
 
@@ -63,12 +65,12 @@ public class ItemDAOImpl implements ItemDAO {
     }
 
     @Override
-    public List<Item> findAllItems(int page, int size) throws SQLException {
+    public List<Object> findAll(int page, int size) throws SQLException {
         PreparedStatement stm = connection.prepareStatement("SELECT * FROM item LIMIT ? OFFSET ?;");
         stm.setObject(1, size);
         stm.setObject(2, size * (page - 1));
         ResultSet rst = stm.executeQuery();
-        List<Item> itemList = new ArrayList<>();
+        List<Object> itemList = new ArrayList<>();
 
         while (rst.next()) {
             itemList.add(new Item(rst.getString("code"), rst.getString("description"), rst.getBigDecimal("unit_price"), rst.getInt("qty_on_hand")));
@@ -83,7 +85,7 @@ public class ItemDAOImpl implements ItemDAO {
     }
 
     @Override
-    public long countItems() throws Exception {
+    public long count() throws Exception {
         Statement stm = connection.createStatement();
         ResultSet rst = stm.executeQuery("SELECT COUNT(*) FROM item");
         rst.next();
@@ -91,9 +93,9 @@ public class ItemDAOImpl implements ItemDAO {
     }
 
     @Override
-    public boolean existsItemByCode(String itemCode) throws SQLException {
+    public boolean existsById(Object key) throws SQLException {
         PreparedStatement stm = connection.prepareStatement("SELECT code FROM item WHERE code=?");
-        stm.setString(1, itemCode);
+        stm.setString(1, key.toString());
         return stm.executeQuery().next();
     }
 
